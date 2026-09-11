@@ -63,7 +63,7 @@ export async function login(req, res) {
         })
     }
 
-    const isPasswordMatch = await user.comparePassword
+    const isPasswordMatch = await user.comparePassword(password)
 
     if (!isPasswordMatch) {
         return res.status(400).json({

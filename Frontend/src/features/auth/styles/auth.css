@@ -1,0 +1,146 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body{
+  height: 100%;
+  width: 100%;
+  font-family: work sans;
+}
+
+.auth-section {
+  min-height: 100vh;
+  background-color: #09090b;
+  color: #f4f4f5;
+  padding: 2.5rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .auth-section {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .auth-section {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.auth-wrapper {
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  min-height: 85vh;
+  width: 100%;
+  max-width: 64rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 28rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(49, 184, 198, 0.4);
+  background-color: rgba(24, 24, 27, 0.7);
+  padding: 2rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+.auth-title {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 700;
+  color: #31b8c6;
+  margin: 0;
+}
+
+.auth-subtitle {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #d4d4d8;
+}
+
+.auth-form {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #e4e4e7;
+}
+
+.form-input {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid #3f3f46;
+  background-color: rgba(9, 9, 11, 0.8);
+  padding: 0.75rem 1rem;
+  color: #f4f4f5;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-input::placeholder {
+  color: #71717a;
+}
+
+.form-input:focus {
+  border-color: #31b8c6;
+  box-shadow: 0 0 0 3px rgba(49, 184, 198, 0.25);
+}
+
+.auth-button {
+  width: 100%;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: #31b8c6;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: #09090b;
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.auth-button:hover {
+  background-color: #45c7d4;
+}
+
+.auth-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(49, 184, 198, 0.35);
+}
+
+.auth-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #d4d4d8;
+}
+
+.auth-link {
+  font-weight: 600;
+  color: #31b8c6;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.auth-link:hover {
+  color: #45c7d4;
+}
