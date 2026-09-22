@@ -1,22 +1,38 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router'
+import { Link, Navigate, useNavigate } from 'react-router'
 import '../styles/auth.css'
+import { useAuth } from '../hook/useAuth.js'
 
 const Register = () => {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
-  const submitForm = (event) => {
+  const { handleRegister } = useAuth()
+
+  const navigate = useNavigate()
+
+  const submitForm = async (event) => {
     event.preventDefault()
+    setError('')
+    setSubmitting(false)
 
-    const payload = {
-      username,
-      email,
-      password,
+    const payload = { username, email, password }
+
+    try{
+      const data = await handleRegister(payload)
+      if(data?.user){
+        navigate('/login')
+      }
     }
-
-    console.log('Register payload:', payload)
+    catch(err){
+      setError(err.response.data.message || err.response.data.errors[0].msg || "Couldn't Register. Please try again")
+    }
+    finally{
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -43,9 +59,7 @@ const Register = () => {
                 placeholder="Choose a username"
                 required
                 className="form-input" />
-            </div>
 
-            <div className="form-group">
               <label htmlFor="email" className="form-label">
                 Email
               </label>
@@ -57,9 +71,7 @@ const Register = () => {
                 placeholder="you@example.com"
                 required
                 className="form-input" />
-            </div>
 
-            <div className="form-group">
               <label htmlFor="password" className="form-label">
                 Password
               </label>
@@ -73,8 +85,10 @@ const Register = () => {
                 className="form-input" />
             </div>
 
-            <button type="submit" className="auth-button" >
-              Register
+            {error && <p className='form-error'>{error}</p>}
+
+            <button type="submit" className="auth-button" disabled={submitting}>
+              {submitting ? 'Creating account...' : 'Register'}
             </button>
           </form>
 

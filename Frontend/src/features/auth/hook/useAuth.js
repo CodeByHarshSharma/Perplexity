@@ -13,6 +13,7 @@ export function useAuth() {
         }
         catch(error){
             dispatch(setError(error.response?.data?.message || "Registration Failed!"))
+            throw error
         }
         finally{
             dispatch(setLoading(false))
@@ -28,7 +29,7 @@ export function useAuth() {
         }
         catch(error){
             dispatch(setError(error.response?.data?.message || "Login Failed!"))
-            return null
+            throw error
         }
         finally{
             dispatch(setLoading(false))

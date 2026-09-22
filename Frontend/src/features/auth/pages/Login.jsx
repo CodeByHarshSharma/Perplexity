@@ -9,30 +9,38 @@ import { useSelector } from 'react-redux'
 const Login = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [error, setError] = useState('')
+    const [submitting, setSubmitting] = useState(false)
 
     const user = useSelector(state => state.auth.user)
     const loading = useSelector(state => state.auth.loading)
-    
+
     const { handleLogin } = useAuth()
 
     const navigate = useNavigate()
 
     const submitForm = async (event) => {
         event.preventDefault()
+        setError('')
+        setSubmitting(true)
 
-        const payload = {
-            email,
-            password,
+        const payload = { email, password }
+
+        try {
+            const data = await handleLogin(payload)
+            if (data?.user) {
+                navigate("/")
+            }
         }
-
-        const data = await handleLogin(payload)
-        if (data?.user) {
-            navigate("/")
+        catch (err) {
+            setError(err.response.data.message || "Couldn't Log in. Please check your credentials")
         }
-
+        finally {
+            setSubmitting(false)
+        }
     }
 
-    if(!loading && user){
+    if (!loading && user) {
         return <Navigate to='/' replace />
     }
 
@@ -59,11 +67,8 @@ const Login = () => {
                                 onChange={(event) => setEmail(event.target.value)}
                                 placeholder="you@example.com"
                                 required
-                                className="form-input"
-                            />
-                        </div>
+                                className="form-input" />
 
-                        <div className="form-group">
                             <label htmlFor="password" className="form-label">
                                 Password
                             </label>
@@ -77,8 +82,10 @@ const Login = () => {
                                 className="form-input" />
                         </div>
 
-                        <button type="submit" className="auth-button" >
-                            Login
+                        {error && <p className='form-error'>{error}</p>}
+
+                        <button type="submit" className="auth-button" disabled={submitting} >
+                            {submitting ? 'Login' : 'Login'}
                         </button>
                     </form>
 

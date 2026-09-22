@@ -134,6 +134,12 @@ html, body{
   color: #d4d4d8;
 }
 
+.form-error {
+    color: #ff6b6b;
+    font-size: 0.85rem;
+    text-align: left;
+}
+
 .auth-link {
   font-weight: 600;
   color: #31b8c6;
