@@ -1,23 +1,44 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { HumanMessage, SystemMessage, AIMessage } from '@langchain/core/messages'
+import { HumanMessage, SystemMessage, AIMessage, tool, createAgent } from 'langchain'
+import * as z from "zod";
+import { searchInternet } from "./internet.service.js";
 
 const geminiModel = new ChatGoogleGenerativeAI({
     model: "gemini-3.1-flash-lite",
     apiKey: process.env.GEMINI_API_KEY
 })
 
+const searchInternetTool = tool(searchInternet, {
+    name: "searchInternet",
+    description: "Use this tool to get latest information from the internet",
+    schema: z.object({
+        query: z.string().describe("The search query to look up on the internet")
+    })
+})
+
+const agent = createAgent({
+    model: geminiModel,
+    tools: [searchInternetTool]
+})
 
 export async function generateMessage(message) {
-    const response = await geminiModel.invoke(message.map(msg => {
-        if(msg.role == "User"){
-            return new HumanMessage(msg.content)
-        }
-        else if(msg.role == 'AI'){
-            return new AIMessage(msg.content)
-        }
-    }))
+    const response = await agent.invoke({
+        messages: [
+            new SystemMessage(`
+                You are a helpful and precise assistant for answering questions.
+                If you don't know the answer, say you currently dont have an answer for that
+                If the question requires up-to-date information , use the "searchInternet" tool to get latest information from the internet and then answer based on the search results.`),
+            ...(message.map(msg => {
+            if (msg.role == "User") {
+                return new HumanMessage(msg.content)
+            }
+            else if (msg.role == 'AI') {
+                return new AIMessage(msg.content)
+            }
+        }))]
+    })
 
-    return response.text
+    return response.messages[ response.messages.length - 1].text
 }
 
 export async function generateChatTitle(message) {
