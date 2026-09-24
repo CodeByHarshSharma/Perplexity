@@ -77,13 +77,9 @@ export async function getMessages(req, res) {
 export async function deleteChat(req, res) {
     const { chatId } = req.params
 
-    const chat = await chatModel.findByIdAndDelete({
+    const chat = await chatModel.findOneAndDelete({
         _id: chatId,
         user: req.user.id
-    })
-
-    await messageModel.deleteMany({
-        chat: chatId
     })
 
     if(!chat){
@@ -92,7 +88,41 @@ export async function deleteChat(req, res) {
         })
     }
 
+    await messageModel.deleteMany({
+        chat: chatId
+    })
+    
     res.status(200).json({
         message: "Chat deleted successfully!"
+    })
+}
+
+export async function renameChat(req, res) {
+    const { chatId } = req.params
+    const { title } = req.body
+
+    const trimmed = (title || '').trim()
+
+    if(!trimmed || trimmed.length > 100){
+        return res.status(400).json({
+            message: "Title must be upto 100 characters"
+        })
+    }
+
+    const chat = await chatModel.findOneAndUpdate(
+        { _id: chatId, user: req.user.id },
+        { title: trimmed },
+        { new: true}
+    )
+
+    if(!chat) {
+        return res.status(404).json({
+            message: "Chat not found"
+        })
+    }
+
+    res.status(200).json({
+        message: "Chat renamed successfully",
+        chat
     })
 }

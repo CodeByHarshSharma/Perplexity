@@ -150,3 +150,6 @@ html, body{
 .auth-link:hover {
   color: #45c7d4;
 }
+
+/* Shared solid-color Quantix palette */
+.auth-section { background-color:#07111f; color:#edf7ff; font-family:Inter,ui-sans-serif,system-ui,sans-serif; }.auth-card { border-radius:1.25rem; border-color:#213954; background-color:#0c1a2b; animation:auth-enter .45s ease both; }.auth-title,.auth-link { color:#35d0ba; }.auth-subtitle,.auth-footer { color:#93aac2; }.form-label { color:#edf7ff; }.form-input { border-color:#213954; background-color:#07111f; color:#edf7ff; transition:border-color .2s ease,box-shadow .2s ease; }.form-input::placeholder { color:#93aac2; }.form-input:focus { border-color:#35d0ba; box-shadow:0 0 0 3px #123d43; }.auth-button { background-color:#35d0ba; color:#07111f; transition:background-color .2s ease,transform .2s ease; }.auth-button:hover { background-color:#69e1d0; transform:translateY(-1px); }.auth-button:focus { box-shadow:0 0 0 3px #123d43; }.auth-link:hover { color:#69e1d0; }.form-error { color:#ff8f8f; } @keyframes auth-enter { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } } @media (prefers-reduced-motion:reduce) { .auth-card,.auth-button,.form-input,.auth-link { animation:none; transition:none; } }
