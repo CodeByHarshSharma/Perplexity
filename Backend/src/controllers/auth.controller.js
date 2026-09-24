@@ -2,6 +2,28 @@ import userModel from "../models/user.model.js";
 import jwt from 'jsonwebtoken';
 import { sendEmail } from "../services/mail.service.js";
 
+const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000"
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173"
+
+async function sendVerificationEmail(user) {
+
+    const emailVerificationToken = jwt.sign({
+        email: user.email,
+    }, process.env.JWT_SECRET, {
+        expiresIn: "3d"
+    })
+
+    await sendEmail({
+        to: user.email,
+        subject: "Welcome to Quantix!",
+        html: `<p>Hi ${user.username},</p><p>Thank you for registering at <strong>Quantix</strong>. We're excited to have you on board!</p>
+        <p>Please verify your email address by clicking the link below:</p>
+        <a href='${SERVER_URL}/api/auth/verifyEmail?token=${emailVerificationToken}'>Verify Email</a>
+        <p>This link expires in 3 days.</p>
+        <p>Best Regards,<br>Quantix Team</p>`
+    })
+}
+
 export async function register(req, res) {
 
     const { username, email, password } = req.body;
@@ -24,20 +46,13 @@ export async function register(req, res) {
         password
     })
 
-    const emailVerificationToken = jwt.sign({
-        email: user.email,
-    }, process.env.JWT_SECRET, {
-        expiresIn: "3d"
-    })
+    try{
 
-    await sendEmail({
-        to: email,
-        subject: "Welcome to Perplexity!",
-        html: `<p>Hi ${username},</p><p>Thank you for registering at <strong>Perplexity</strong>. We're excited to have you on board!</p>
-        <p>Please verify your email address by clicking the link below:</p>
-        <a href='http://localhost:3000/api/auth/verifyEmail?token=${emailVerificationToken}'>Verify Email</a>
-        <p>Best Regards,<br>Perplexity Team</p>`
-    })
+        await sendVerificationEmail(user)
+    }
+    catch(err){
+        console.error("Failed to send verification email:", err)
+    }
 
     res.status(201).json({
         message: "User registerd successfully",
@@ -47,6 +62,53 @@ export async function register(req, res) {
             username: user.username,
             email: user.email
         }
+    })
+}
+
+export async function resendVerificationEmail(req, res) {
+    const { email } = req.body
+
+    if (!email) {
+        return res.status(400).json({
+            message: "Email is required",
+            success: false,
+            err: "Email missing"
+        })
+    }
+
+    const user = await userModel.findOne({ email })
+
+    if (!user) {
+        return res.status(404).json({
+            message: "No account found with that email",
+            success: false,
+            err: "User not found"
+        })
+    }
+
+    if (user.verified) {
+        return res.status(400).json({
+            message: "This email is already verified. You can login.",
+            success: false,
+            err: "Already verified"
+        })
+    }
+
+    try {
+        await sendVerificationEmail(user)
+    }
+    catch (err) {
+        console.error("Failed to resend verification email:", err)
+        return res.status(500).json({
+            message: "Couldn't send the email right now. Please try again in a moment.",
+            success: false,
+            err: "Mail service failed"
+        })
+    }
+
+    res.status(200).json({
+        message: "Verification email sent. Please check your inbox.",
+        success: true
     })
 }
 
@@ -86,7 +148,12 @@ export async function login(req, res) {
         username: user.username
     }, process.env.JWT_SECRET, { expiresIn: "7d" })
 
-    res.cookie('token', token)
+    res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // matches your JWT's 7d expiry
+    })
 
     res.status(200).json({
         message: "User LoggedIN",
@@ -102,6 +169,12 @@ export async function login(req, res) {
 export async function verifyEmail(req, res) {
     const { token } = req.query
 
+    // Every outcome redirects to the frontend so the user always lands on a real page
+    const redirectToApp = (status, email) => {
+        const params = new URLSearchParams({ status })
+        if (email) params.set('email', email)
+        return res.redirect(`${FRONTEND_URL}/verify-email?${params.toString()}`)
+    }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
@@ -109,32 +182,27 @@ export async function verifyEmail(req, res) {
         const user = await userModel.findOne({ email: decoded.email })
 
         if (!user) {
-            return res.status(400).json({
-                message: "Invalid Token",
-                success: false,
-                err: "User not Found"
-            })
+            return redirectToApp('invalid')
+        }
+
+        if (user.verified) {
+            return redirectToApp('already', user.email)
         }
 
         user.verified = true;
 
         await user.save();
 
-        const html = `
-        <h1>Email Verified Successfully</h1>
-        <p>Your email has been verified. You can now login to your account.
-        <a href="http://localhost:3000/login">Go to login</a>`
-
-
-        return res.send(html)
+        return redirectToApp('success', user.email)
 
     }
     catch (err) {
-        return res.status(400).json({
-            message: "Invalid or Expired Token",
-            success: false,
-            err: err.message
-        })
+        if (err.name === 'TokenExpiredError') {
+            // The token is unusable but still readable, so the page can offer a resend
+            return redirectToApp('expired', jwt.decode(token)?.email)
+        }
+
+        return redirectToApp('invalid')
     }
 
 
@@ -145,7 +213,7 @@ export async function getMe(req, res) {
 
     const user = await userModel.findById(userId).select("-password");
 
-    if(!user){
+    if (!user) {
         return res.status(404).json({
             message: "User not found",
             success: false,

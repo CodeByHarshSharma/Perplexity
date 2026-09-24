@@ -1,5 +1,6 @@
 import { initializeSocketConnection } from "../service/chat.socket.js"
 import { sendMessage, getChats, getMessages, deleteChat, renameChat as renameChatApi } from "../service/chat.api.js"
+import { createLocalId } from "../service/id.js"
 import { setChats, setCurrentChatId, setLoading, setError, createNewChat, addNewMessage, addMessages, removeChat, renameChat, addPendingMessage, replaceChatId, resolvePendingMessage, failPendingMessage } from '../chat.slice.js'
 import { useDispatch } from 'react-redux'
 import { store } from '../../../app/app.store.js'
@@ -11,8 +12,8 @@ export const useChat = () => {
     async function handleSendMessage({ message, chatId }) {
 
         const isNew = !chatId
-        const activeId = chatId || crypto.randomUUID()
-        const pendingId = crypto.randomUUID()
+        const activeId = chatId || createLocalId()
+        const pendingId = createLocalId()
 
         if(isNew){
             dispatch(createNewChat({

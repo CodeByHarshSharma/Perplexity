@@ -1,5 +1,5 @@
 import { useDispatch } from "react-redux";
-import { register, login, getMe } from "../service/auth.api";
+import { register, login, getMe, resendVerification } from "../service/auth.api";
 import { setUser, setLoading, setError } from "../auth.slice";
 
 export function useAuth() {
@@ -10,6 +10,7 @@ export function useAuth() {
         try{
             dispatch(setLoading(true))
             const data = await register({ email, username, password })
+            return data
         }
         catch(error){
             dispatch(setError(error.response?.data?.message || "Registration Failed!"))
@@ -17,6 +18,17 @@ export function useAuth() {
         }
         finally{
             dispatch(setLoading(false))
+        }
+    }
+
+    async function handleResendVerification({ email }){
+        try{
+            const data = await resendVerification({ email })
+            return data
+        }
+        catch(error){
+            dispatch(setError(error.response?.data?.message || "Couldn't resend the verification email!"))
+            throw error
         }
     }
 
@@ -43,7 +55,7 @@ export function useAuth() {
             dispatch(setUser(data.user))
         }
         catch(error){
-            dispatch(setError(error.response?.data?.message) || "Failed to fetch user data")
+            dispatch(setError(error.response?.data?.message || "Failed to fetch user data"))
         }
         finally{
             dispatch(setLoading(false))
@@ -51,6 +63,6 @@ export function useAuth() {
     }
 
     return{
-        handleRegister, handleLogin, handleGetMe
+        handleRegister, handleLogin, handleGetMe, handleResendVerification
     }
 }

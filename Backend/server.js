@@ -12,6 +12,6 @@ const httpServer = http.createServer(app)
 
 initSocket(httpServer)
 
-httpServer.listen(3000, () => {
+httpServer.listen(PORT, () => {
     console.log(`Server is running at port:${PORT}`)
 })

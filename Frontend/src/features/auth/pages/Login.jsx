@@ -33,7 +33,7 @@ const Login = () => {
             }
         }
         catch (err) {
-            setError(err.response.data.message || "Couldn't Log in. Please check your credentials")
+            setError(err.response?.data?.message || "Couldn't Log in. Please check your credentials")
         }
         finally {
             setSubmitting(false)
@@ -83,6 +83,17 @@ const Login = () => {
                         </div>
 
                         {error && <p className='form-error'>{error}</p>}
+
+                        {error.toLowerCase().includes('verify') && (
+                            <p className="auth-hint">
+                                Didn&apos;t get the email?{' '}
+                                <Link
+                                    to={`/verify-email?status=pending&email=${encodeURIComponent(email)}`}
+                                    className="auth-link">
+                                    Send a new verification link
+                                </Link>
+                            </p>
+                        )}
 
                         <button type="submit" className="auth-button" disabled={submitting} >
                             {submitting ? 'Login' : 'Login'}

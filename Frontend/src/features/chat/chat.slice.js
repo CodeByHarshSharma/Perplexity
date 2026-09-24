@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { createLocalId } from './service/id.js';
 
 
 const chatSlice = createSlice({
@@ -61,7 +62,7 @@ const chatSlice = createSlice({
         },
         addNewMessage: (state, action) => {
             const { chatId, content, role } = action.payload
-            state.chats[chatId].messages.push({ id: crypto.randomUUID(), content, role })
+            state.chats[chatId].messages.push({ id: createLocalId(), content, role })
         },
         addMessages: (state, action) => {
             const { chatId, messages } = action.payload

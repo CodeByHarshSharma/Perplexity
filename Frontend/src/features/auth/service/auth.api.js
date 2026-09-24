@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:3000',
+    baseURL: '',
     withCredentials: true
 })
 
@@ -18,6 +18,16 @@ export async function register({ email, username, password }) {
 export async function login({ email, password }) {
     try{
         const response = await api.post("/api/auth/login", { email, password })
+        return response.data
+    }
+    catch(error){
+        throw error
+    }
+}
+
+export async function resendVerification({ email }) {
+    try{
+        const response = await api.post("/api/auth/resend-verification", { email })
         return response.data
     }
     catch(error){
